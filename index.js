@@ -30,7 +30,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// ⬇️ Mongoose pluginni shu yerda ulaymiz
+// ⬇️ Mongoose pluginni shu yerda ulaymizz
 mongoose.plugin(applyTimezone);
 
 (async () => await connectDB())();
