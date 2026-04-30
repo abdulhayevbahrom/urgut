@@ -22,7 +22,7 @@ const io = require("./middleware/socket.header")(server);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// CORS sozlamalari
+// CORS sozlamalari bu
 const corsOptions = {
   origin: ["http://localhost:5173", "https://bogishamol.my-hotels.uz"],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
