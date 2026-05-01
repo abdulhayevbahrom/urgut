@@ -11,6 +11,7 @@ const {
 } = require("../utils/hotelSettings");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_UZBEKISTAN_COUNTRY = "Uzbekistan";
 const VIP_REQUEST_FIELDS = "status guest requestedBy decidedBy decidedAt note createdAt";
 const VIP_GUEST_FIELDS = "firstname lastname passport room vip vipRequestStatus";
 
@@ -235,6 +236,7 @@ const createGuest = async (req, res) => {
       birthDate,
       phone,
       guestType = "uzb",
+      country = "",
       vip = false,
       isBooking = false,
       bookedForDate,
@@ -245,6 +247,15 @@ const createGuest = async (req, res) => {
     } = req.body;
 
     const normalizedPassport = String(passport || "").trim();
+    const normalizedGuestType =
+      guestType === "chetellik" ? "chetellik" : "uzb";
+    const normalizedCountry =
+      normalizedGuestType === "chetellik"
+        ? String(country || "").trim()
+        : DEFAULT_UZBEKISTAN_COUNTRY;
+    if (normalizedGuestType === "chetellik" && !normalizedCountry) {
+      return response.error(res, "Chet ellik mehmon uchun davlat majburiy");
+    }
     const blacklistedGuest = await Guest.findOne({
       passport: {
         $regex: `^${escapeRegex(normalizedPassport)}$`,
@@ -318,7 +329,8 @@ const createGuest = async (req, res) => {
       passport: normalizedPassport,
       birthDate,
       phone: String(phone || "").trim(),
-      guestType,
+      guestType: normalizedGuestType,
+      country: normalizedCountry,
       vip: false,
       vipRequestStatus: isVipRequested ? "pending" : "none",
       vipRequestedBy: isVipRequested ? acceptedBy : null,
@@ -624,6 +636,28 @@ const updateGuest = async (req, res) => {
     }
 
     const updates = { ...req.body };
+    if (Object.prototype.hasOwnProperty.call(updates, "guestType")) {
+      updates.guestType =
+        updates.guestType === "chetellik" ? "chetellik" : "uzb";
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(updates, "country") ||
+      Object.prototype.hasOwnProperty.call(updates, "guestType")
+    ) {
+      const nextGuestType = String(updates.guestType || guest.guestType || "uzb");
+      const nextCountry = String(
+        Object.prototype.hasOwnProperty.call(updates, "country")
+          ? updates.country
+          : guest.country || "",
+      ).trim();
+      if (nextGuestType === "chetellik" && !nextCountry) {
+        return response.error(res, "Chet ellik mehmon uchun davlat majburiy");
+      }
+      updates.country =
+        nextGuestType === "chetellik"
+          ? nextCountry
+          : DEFAULT_UZBEKISTAN_COUNTRY;
+    }
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     let nextBookedForAt = guest.bookedForAt;

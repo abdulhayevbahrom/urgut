@@ -11,6 +11,7 @@ const createGuestSchema = {
     birthDate: { type: "string", minLength: 1 },
     phone: { type: "string" },
     guestType: { type: "string", enum: ["uzb", "chetellik"], default: "uzb" },
+    country: { type: "string", minLength: 1 },
     isBlacklisted: { type: "boolean", default: false },
     vip: { type: "boolean", default: false },
     isBooking: { type: "boolean", default: false },
@@ -20,6 +21,19 @@ const createGuestSchema = {
     stayDays: { type: "number", minimum: 1 },
     note: { type: "string" },
   },
+  allOf: [
+    {
+      if: {
+        required: ["guestType"],
+        properties: {
+          guestType: { const: "chetellik" },
+        },
+      },
+      then: {
+        required: ["country"],
+      },
+    },
+  ],
 };
 
 const updateGuestSchema = {
@@ -33,6 +47,7 @@ const updateGuestSchema = {
     birthDate: { type: "string", minLength: 1 },
     phone: { type: "string" },
     guestType: { type: "string", enum: ["uzb", "chetellik"] },
+    country: { type: "string", minLength: 1 },
     isBlacklisted: { type: "boolean" },
     vip: { type: "boolean" },
     dailyRate: { type: "number", minimum: 0 },
@@ -41,6 +56,19 @@ const updateGuestSchema = {
     bookedForAt: { type: "string", minLength: 1 },
     note: { type: "string" },
   },
+  allOf: [
+    {
+      if: {
+        required: ["guestType"],
+        properties: {
+          guestType: { const: "chetellik" },
+        },
+      },
+      then: {
+        required: ["country"],
+      },
+    },
+  ],
 };
 
 const guestIdParamsSchema = {

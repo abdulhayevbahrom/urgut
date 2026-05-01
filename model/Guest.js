@@ -57,6 +57,7 @@ const guestSchema = new mongoose.Schema(
     birthDate: { type: Date, required: true },
     phone: { type: String, trim: true, default: "" },
     guestType: { type: String, enum: ["uzb", "chetellik"], default: "uzb" },
+    country: { type: String, trim: true, default: "" },
     isBlacklisted: { type: Boolean, default: false },
 
     // VIP holati va tasdiqlash jarayoni
