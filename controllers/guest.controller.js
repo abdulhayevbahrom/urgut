@@ -60,6 +60,16 @@ const canManageVip = (user) => {
 const escapeRegex = (value) =>
   String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+const normalizeCountryInput = (value) => {
+  if (Array.isArray(value)) {
+    const firstNonEmpty = value.find(
+      (item) => String(item || "").trim().length > 0,
+    );
+    return String(firstNonEmpty || "").trim();
+  }
+  return String(value || "").trim();
+};
+
 const buildBillingState = (
   checkInAt,
   stayDays,
@@ -251,7 +261,7 @@ const createGuest = async (req, res) => {
       guestType === "chetellik" ? "chetellik" : "uzb";
     const normalizedCountry =
       normalizedGuestType === "chetellik"
-        ? String(country || "").trim()
+        ? normalizeCountryInput(country)
         : DEFAULT_UZBEKISTAN_COUNTRY;
     if (normalizedGuestType === "chetellik" && !normalizedCountry) {
       return response.error(res, "Chet ellik mehmon uchun davlat majburiy");
@@ -485,8 +495,15 @@ const attachGuestRuntimeFlags = (guest) => {
   const now = Date.now();
   const checkoutReminderAt = new Date(guest.checkoutReminderAt || 0).getTime();
   const checkoutDueAt = new Date(guest.checkoutDueAt || 0).getTime();
+  const guestType = String(guest?.guestType || "uzb");
+  const rawCountry = String(guest?.country || "").trim();
+  const normalizedCountry =
+    guestType === "chetellik"
+      ? rawCountry
+      : rawCountry || DEFAULT_UZBEKISTAN_COUNTRY;
   return {
     ...guest,
+    country: normalizedCountry,
     isCheckoutReminderTime: now >= checkoutReminderAt && now < checkoutDueAt,
     isCheckoutOverdue: checkoutDueAt > 0 && now > checkoutDueAt,
   };
@@ -645,11 +662,11 @@ const updateGuest = async (req, res) => {
       Object.prototype.hasOwnProperty.call(updates, "guestType")
     ) {
       const nextGuestType = String(updates.guestType || guest.guestType || "uzb");
-      const nextCountry = String(
+      const nextCountry = normalizeCountryInput(
         Object.prototype.hasOwnProperty.call(updates, "country")
           ? updates.country
           : guest.country || "",
-      ).trim();
+      );
       if (nextGuestType === "chetellik" && !nextCountry) {
         return response.error(res, "Chet ellik mehmon uchun davlat majburiy");
       }
