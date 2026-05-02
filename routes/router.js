@@ -56,6 +56,7 @@ const {
   addGuestServiceSchema,
   vipRequestIdParamsSchema,
   decideVipRequestSchema,
+  transferGuestRoomSchema,
 } = require("../validations/guest.validation");
 const {
   createServiceSchema,
@@ -80,6 +81,7 @@ const {
   getVipRequestsCount,
   decideVipRequest,
   updateGuest,
+  transferGuestRoom,
   addGuestPayment,
   addGuestService,
   checkoutGuest,
@@ -213,6 +215,12 @@ router.put(
   validate(guestIdParamsSchema, "params"),
   validate(updateGuestSchema),
   updateGuest,
+);
+router.post(
+  "/guest/:id/transfer-room",
+  validate(guestIdParamsSchema, "params"),
+  validate(transferGuestRoomSchema),
+  transferGuestRoom,
 );
 router.post(
   "/guest/:id/payment",

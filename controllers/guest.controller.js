@@ -1062,6 +1062,92 @@ const addGuestService = async (req, res) => {
   }
 };
 
+const transferGuestRoom = async (req, res) => {
+  try {
+    const guest = await Guest.findById(req.params.id);
+    if (!guest) return response.notFound(res, "Mehmon topilmadi");
+    if (guest.status === "checked_out") {
+      return response.error(res, "Checkout qilingan mijozni ko'chirib bo'lmaydi");
+    }
+
+    const previousRoomId = String(guest.room || "");
+    const nextRoomId = String(req.body.room || "");
+    if (!nextRoomId) return response.error(res, "Yangi xona majburiy");
+
+    if (previousRoomId === nextRoomId) {
+      const sameRoomGuest = await Guest.findById(guest._id).populate("room").lean();
+      return response.success(
+        res,
+        "Mijoz allaqachon shu xonada",
+        attachGuestRuntimeFlags(sameRoomGuest),
+      );
+    }
+
+    const targetRoom = await Room.findById(nextRoomId).lean();
+    if (!targetRoom) return response.notFound(res, "Xona topilmadi");
+    if (targetRoom.status === "remont") {
+      return response.error(
+        res,
+        "Bu xona remont/yopiq holatda. Mijozni ko'chirib bo'lmaydi",
+      );
+    }
+
+    if (guest.status === "booked") {
+      if (!guest.bookedForAt) {
+        return response.error(res, "Bron sanasi topilmadi");
+      }
+      const dayStart = new Date(guest.bookedForAt);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(guest.bookedForAt);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const hasBookingConflict = await Guest.exists({
+        _id: { $ne: guest._id },
+        room: nextRoomId,
+        status: "booked",
+        bookedForAt: { $gte: dayStart, $lte: dayEnd },
+      });
+      if (hasBookingConflict) {
+        return response.error(
+          res,
+          "Bu xona shu kunga allaqachon bron qilingan",
+        );
+      }
+    } else {
+      const targetActiveCount = await Guest.countDocuments({
+        room: targetRoom._id,
+        status: "active",
+        _id: { $ne: guest._id },
+      });
+      if (targetActiveCount >= Number(targetRoom.capacity || 0)) {
+        return response.error(res, "Xonada bo'sh joy yo'q");
+      }
+    }
+
+    guest.room = targetRoom._id;
+    await guest.save();
+
+    await syncRoomsOccupancyBatch([previousRoomId, String(targetRoom._id)]);
+
+    emitGuestChanged(req.app.get("socket"), {
+      guestId: String(guest._id),
+      roomId: String(targetRoom._id),
+      previousRoomId,
+      status: guest.status,
+      reason: "guest_room_transferred",
+    });
+
+    const populated = await Guest.findById(guest._id).populate("room").lean();
+    return response.success(
+      res,
+      "Mijoz boshqa xonaga ko'chirildi",
+      attachGuestRuntimeFlags(populated),
+    );
+  } catch (error) {
+    return response.serverError(res, error.message);
+  }
+};
+
 const checkoutGuest = async (req, res) => {
   try {
     const guest = await Guest.findById(req.params.id);
@@ -1141,6 +1227,7 @@ module.exports = {
   getVipRequestsCount,
   decideVipRequest,
   updateGuest,
+  transferGuestRoom,
   addGuestPayment,
   addGuestService,
   checkoutGuest,

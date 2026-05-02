@@ -54,6 +54,7 @@ const updateGuestSchema = {
     stayDays: { type: "number", minimum: 1 },
     totalAmount: { type: "number", minimum: 0 },
     bookedForAt: { type: "string", minLength: 1 },
+    room: { type: "string", pattern: "^[0-9a-fA-F]{24}$" },
     note: { type: "string" },
   },
   allOf: [
@@ -133,6 +134,15 @@ const decideVipRequestSchema = {
   },
 };
 
+const transferGuestRoomSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["room"],
+  properties: {
+    room: { type: "string", pattern: "^[0-9a-fA-F]{24}$" },
+  },
+};
+
 module.exports = {
   createGuestSchema,
   updateGuestSchema,
@@ -142,4 +152,5 @@ module.exports = {
   addGuestServiceSchema,
   vipRequestIdParamsSchema,
   decideVipRequestSchema,
+  transferGuestRoomSchema,
 };
