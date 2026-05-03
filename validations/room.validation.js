@@ -1,4 +1,21 @@
-const categories = ["standart", "polulyuks", "lyuks", "apartament", "bir_kishilik"];
+const categories = [
+  "standart_duxspalni",
+  "standart_ikki_kishilik",
+  "standart_3kishilik",
+  "standart_4kishilik",
+  "standart_familiy",
+  "Standart duxspalni",
+  "Standart ikki kishilik",
+  "Standart 3kishilik",
+  "Standard 4kishilik",
+  "Standart 4kishilik",
+  "Standart oilaviy",
+  "standart",
+  "polulyuks",
+  "lyuks",
+  "apartament",
+  "bir_kishilik",
+];
 const statuses = ["bosh", "band", "remont"];
 
 const createRoomSchema = {

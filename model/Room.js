@@ -27,7 +27,13 @@ const roomSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ["standart", "polulyuks", "lyuks", "apartament", "bir_kishilik"],
+      enum: [
+        "standart_duxspalni",
+        "standart_ikki_kishilik",
+        "standart_3kishilik",
+        "standart_4kishilik",
+        "standart_familiy",
+      ],
     },
     status: {
       type: String,
