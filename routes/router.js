@@ -101,6 +101,18 @@ const {
   cancelHallBooking,
   deleteHallBooking,
 } = require("../controllers/hallBooking.controller");
+const {
+  listAttendanceEmployees,
+  createAttendance,
+  getAttendanceByDate,
+  getMonthlyAttendanceReport,
+} = require("../controllers/attendance.controller");
+const {
+  createAttendanceSchema,
+  attendanceHistoryQuerySchema,
+  attendanceMonthlyReportQuerySchema,
+  attendanceEmployeesQuerySchema,
+} = require("../validations/attendance.validation");
 
 router.post("/employee/login", validate(loginEmployeeSchema), loginEmployee);
 router.post(
@@ -244,6 +256,22 @@ router.post(
   "/support/message",
   validate(sendSupportMessageSchema),
   sendSupportMessage,
+);
+router.get(
+  "/attendance/employees",
+  validate(attendanceEmployeesQuerySchema, "query"),
+  listAttendanceEmployees,
+);
+router.post("/attendance", validate(createAttendanceSchema), createAttendance);
+router.get(
+  "/attendance/history",
+  validate(attendanceHistoryQuerySchema, "query"),
+  getAttendanceByDate,
+);
+router.get(
+  "/attendance/monthly-report",
+  validate(attendanceMonthlyReportQuerySchema, "query"),
+  getMonthlyAttendanceReport,
 );
 
 module.exports = router;
