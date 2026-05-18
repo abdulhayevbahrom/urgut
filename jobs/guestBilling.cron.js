@@ -10,6 +10,8 @@ const {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const APP_TIMEZONE = process.env.APP_TIMEZONE || "Asia/Tashkent";
+const getOccupancyStatus = (activeCount) =>
+  Number(activeCount || 0) > 0 ? "band" : "bosh";
 
 const emitGuestChanged = (io, payload = {}) => {
   if (!io) return;
@@ -92,9 +94,7 @@ const syncRoomsOccupancyByIds = async (roomIds = []) => {
     const nextStatus =
       room.status === "remont"
         ? "remont"
-        : activeCount >= Number(room.capacity || 0)
-          ? "band"
-          : "bosh";
+        : getOccupancyStatus(activeCount);
 
     if (
       Number(room.activeGuestsCount || 0) === activeCount &&

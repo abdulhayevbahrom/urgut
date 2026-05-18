@@ -14,6 +14,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_UZBEKISTAN_COUNTRY = "Uzbekistan";
 const VIP_REQUEST_FIELDS = "status guest requestedBy decidedBy decidedAt note createdAt";
 const VIP_GUEST_FIELDS = "firstname lastname passport room vip vipRequestStatus";
+const getOccupancyStatus = (activeCount) =>
+  Number(activeCount || 0) > 0 ? "band" : "bosh";
 
 const emitPendingVipCount = async (io) => {
   if (!io) return;
@@ -204,9 +206,7 @@ const syncRoomsOccupancyBatch = async (roomIds = []) => {
     const nextStatus =
       room.status === "remont"
         ? "remont"
-        : activeCount >= Number(room.capacity || 0)
-          ? "band"
-          : "bosh";
+        : getOccupancyStatus(activeCount);
 
     if (
       Number(room.activeGuestsCount || 0) === activeCount &&

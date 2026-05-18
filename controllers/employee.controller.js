@@ -12,7 +12,9 @@ const EMPLOYEE_LIST_FIELDS =
 
 const buildTokenPayload = (employee) => ({
   id: employee._id,
-  role: String(employee.position || "").toLowerCase().trim(),
+  role: String(employee.position || "")
+    .toLowerCase()
+    .trim(),
   login: employee.login,
   sections: employee.sections || [],
   tv: Number(employee.tokenVersion || 1),
@@ -215,7 +217,9 @@ const loginEmployee = async (req, res) => {
     if (!passwordMatch)
       return response.unauthorized(res, "Login yoki parol noto'g'ri");
 
-    const normalizedRole = String(employee.position || "").toLowerCase().trim();
+    const normalizedRole = String(employee.position || "")
+      .toLowerCase()
+      .trim();
     const token = signAccessToken(employee);
     const refreshToken = signRefreshToken(employee);
     employee.refreshToken = refreshToken;
@@ -269,7 +273,9 @@ const refreshEmployeeToken = async (req, res) => {
         id: employee._id,
         firstname: employee.firstname,
         lastname: employee.lastname,
-        role: String(employee.position || "").toLowerCase().trim(),
+        role: String(employee.position || "")
+          .toLowerCase()
+          .trim(),
         sections: employee.sections || [],
       },
     });

@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("node:path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const connectDB = require("./config/dbConfig"); // yoki ./utils/connect
 const cors = require("cors");

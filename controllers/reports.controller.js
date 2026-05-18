@@ -109,18 +109,39 @@ const getReportsSummary = async (req, res) => {
         Room.aggregate([
           {
             $group: {
-              _id: "$status",
-              count: { $sum: 1 },
-            },
-          },
-          {
-            $group: {
               _id: null,
-              total: { $sum: "$count" },
-              byStatus: {
-                $push: {
-                  k: "$_id",
-                  v: "$count",
+              total: { $sum: 1 },
+              band: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $ne: ["$status", "remont"] },
+                        { $gt: [{ $ifNull: ["$activeGuestsCount", 0] }, 0] },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              bosh: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $ne: ["$status", "remont"] },
+                        { $eq: [{ $ifNull: ["$activeGuestsCount", 0] }, 0] },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              remont: {
+                $sum: {
+                  $cond: [{ $eq: ["$status", "remont"] }, 1, 0],
                 },
               },
             },
@@ -129,7 +150,11 @@ const getReportsSummary = async (req, res) => {
             $project: {
               _id: 0,
               total: 1,
-              byStatus: { $arrayToObject: "$byStatus" },
+              byStatus: {
+                band: "$band",
+                bosh: "$bosh",
+                remont: "$remont",
+              },
             },
           },
         ]).then((result) => result?.[0] || {}),

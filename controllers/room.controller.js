@@ -25,8 +25,8 @@ const normalizeRoomCategory = (value) => {
   const key = String(value || "").trim().toLowerCase();
   return ROOM_CATEGORY_MAP.get(key) || String(value || "").trim();
 };
-const getOccupancyStatus = (activeCount, capacity) =>
-  activeCount >= capacity ? "band" : "bosh";
+const getOccupancyStatus = (activeCount) =>
+  Number(activeCount || 0) > 0 ? "band" : "bosh";
 
 const createRoom = async (req, res) => {
   try {
@@ -100,7 +100,7 @@ const updateRoom = async (req, res) => {
       });
       room.activeGuestsCount = activeCount;
       if (room.status !== "remont") {
-        room.status = getOccupancyStatus(activeCount, room.capacity);
+        room.status = getOccupancyStatus(activeCount);
       }
       await room.save();
     }
